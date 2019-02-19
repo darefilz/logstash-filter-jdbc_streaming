@@ -108,6 +108,11 @@ module LogStash module Filters class JdbcStreaming < LogStash::Filters::Base
   # The least recently used entry will be evicted
   config :cache_size, :validate => :number, :default => 500
 
+  # If enabled, all fields of the one and only result are copied to the events root level.
+  # This is also true for a non-empty `default_hash`. If `target` holds more than one element
+  # this option is ignored. Defaults to `false`.
+  config :copy_single_result_to_root, :validate => :boolean, :default => false
+
   # ----------------------------------------
   public
 
@@ -178,6 +183,11 @@ module LogStash module Filters class JdbcStreaming < LogStash::Filters::Base
   def process_event(event, value)
     # use deep clone here so other filter function don't taint the cached payload by reference
     event.set(@target, ::LogStash::Util.deep_clone(value))
+    if @copy_single_result_to_root && value.size == 1 && !value.first.empty?
+      value.first.each do |key, val|
+        event.set(key, val)
+      end
+    end
     filter_matched(event)
   end
 
