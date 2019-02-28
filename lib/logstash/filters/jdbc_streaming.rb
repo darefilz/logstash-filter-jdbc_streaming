@@ -107,6 +107,8 @@ module LogStash module Filters class JdbcStreaming < LogStash::Filters::Base
   # The maximum number of cache entries are stored, defaults to 500 entries
   # The least recently used entry will be evicted
   config :cache_size, :validate => :number, :default => 500
+  
+  # Whenever an executed query returned more than a single result, merge them
 
   # ----------------------------------------
   public
